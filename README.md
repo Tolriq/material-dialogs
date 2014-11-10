@@ -15,7 +15,7 @@ Easily reference the library in your Android projects using this dependency in y
 
 ```Groovy
 dependencies {
-    compile 'com.afollestad:material-dialogs:0.0.2'
+    compile 'com.afollestad:material-dialogs:0.0.3'
 }
 ```
 
@@ -316,6 +316,18 @@ the user selects a list item:
 MaterialDialog dialog new MaterialDialog.Builder(this)
         // ... other initialization
         .autoDismiss(false)
+        .build()
+        .show();
+```
+
+To customize fonts:
+
+```java
+Typeface titleAndActions = // ... initialize
+Typeface contentAndListItems = // ... initialize
+MaterialDialog dialog new MaterialDialog.Builder(this)
+        // ... other initialization
+        .typeface(titleAndActions, contentAndListItems)
         .build()
         .show();
 ```
