@@ -1,9 +1,9 @@
 # Material Dialogs
 
-Welcome. This library was designed to solve a personal problem with my apps, I use AppCompat to use
-Material theming on versions of Android below Lollipop. However, AppCompat doesn't theme AlertDialogs
-to use Material on pre-Lollipop. This library allows you to use a consistently Material themed dialog on
-all versions of Android, along with specific customizations that make it easier to brand the dialog.
+This library was designed to solve a personal problem with my apps, I use AppCompat to use
+Material theming on versions of Android below Lollipop. However, despite being able to theme everything else,
+AppCompat doesn't theme AlertDialogs with Material design. This library allows you to use consistently Material
+themed dialogs on all versions of Android, along with specific customizations that make it easier to brand the dialog.
 
 The code you see below is also found in the sample project. You can download a APK of the sample here: https://github.com/afollestad/material-dialogs/blob/master/sample/sample.apk. The sample's also available on Google Play: https://play.google.com/store/apps/details?id=com.afollestad.materialdialogssample.
 
@@ -15,7 +15,7 @@ Easily reference the library in your Android projects using this dependency in y
 
 ```Groovy
 dependencies {
-    compile 'com.afollestad:material-dialogs:0.0.4'
+    compile 'com.afollestad:material-dialogs:0.1.0'
 }
 ```
 
@@ -37,14 +37,35 @@ new MaterialDialog.Builder(this)
         .title("Use Google's Location Services?")
         .content("Let Google help apps determine location. This means sending anonymous location data to Google, even when no apps are running.")
         .theme(Theme.LIGHT)  // the default is light, so you don't need this line
-        .positiveText("Agree")  // the default is 'OK'
+        .positiveText("Agree")  // the default for textual dialogs (not list or custom view dialogs) is 'OK'
         .negativeText("Disagree")  // leaving this line out will remove the negative button
         .build()
         .show();
 ```
 
-On Lollipop (API 21), the Material dialog will automatically match the `positiveColor` (which is used on the
-positive action button) to the `colorAccent` attribute of your styles.xml theme.
+On Lollipop (API 21) or if you use AppCompat, the Material dialog will automatically match the `positiveColor`
+(which is used on the positive action button) to the `colorAccent` attribute of your styles.xml theme.
+
+If the content is long enough, it will become scrollable and a divider will be displayde above the action buttons.
+
+---
+
+### Displaying an Icon
+
+MaterialDialog supports the display of an icon just like the stock AlertDialog; it will go to the left of the title.
+
+```java
+Drawable d = // ... get from somewhere...
+new MaterialDialog.Builder(this)
+        .title("Use Google's Location Services?")
+        .content("Let Google help apps determine location. This means sending anonymous location data to Google, even when no apps are running.")
+        .positiveText("Agree")  // the default for textual dialogs (not list or custom view dialogs) is 'OK'
+        .icon(d)
+        .build()
+        .show();
+```
+
+You can substitute a `Drawable` instance of a drawable resource ID or attribute ID.
 
 ---
 
@@ -63,7 +84,8 @@ new MaterialDialog.Builder(this)
         .show();
 ```
 
-On a tablet, this will be no different that the basic example. On a smaller phone, they will stack.
+If you have multiple action buttons, and together they're too long to fit on one line, the dialog will stack
+ the buttons automatically.
 
 ---
 
@@ -147,6 +169,8 @@ new MaterialDialog.Builder(this)
 ```
 
 If `autoDismiss` is turned off, then you must manually dismiss the dialog in the callback. Auto dismiss is on by default.
+You can pass `positiveText()` or the other action buttons to the builder to force it to display the action buttons
+below your list, however this is only useful in some specific cases.
 
 ---
 
@@ -181,7 +205,10 @@ new MaterialDialog.Builder(this)
 
 If you want to preselect an item, pass an index 0 or greater in place of -1 in `itemsCallbackSingleChoice()`.
 If `autoDismiss` is turned off, then you must manually dismiss the dialog in the callback. Auto dismiss is on by default.
-When `hideActions` is turned on, the callback will be called everytime you select an item, without the dialog being dismissed.
+When `positiveText()` is not used, the callback will be called every time you select an item since no action is
+available to press, without the dialog being dismissed. You can pass `positiveText()` or the other action
+buttons to the builder to force it to display the action buttons below your list, however this is only
+useful in some specific cases.
 
 ---
 
@@ -210,8 +237,10 @@ new MaterialDialog.Builder(this)
 
 If you want to preselect item(s), pass an array of indices in place of null in `itemsCallbackSingleChoice()`.
 For an example, `new Integer[] { 2, 5 }`. If `autoDismiss` is turned off, then you must manually
-dismiss the dialog in the callback. Auto dismiss is on by default. When `hideActions` is turned on,
-the callback will be called everytime you select or unselect items, without the dialog being dismissed.
+dismiss the dialog in the callback. Auto dismiss is on by default. When `positiveText()` is not used, the
+callback will be called every time you select an item since no action is available to press, without the
+dialog being dismissed. You can pass `positiveText()` or the other action buttons to the builder to force
+it to display the action buttons below your list, however this is only useful in some specific cases.
 
 ---
 
@@ -222,7 +251,6 @@ Custom views are very easy to implement. To match the dialog show here: http://w
 ```java
 new MaterialDialog.Builder(this)
         .title("Google Wifi")
-        .positiveText("Agree")
         .customView(R.layout.custom_view)
         .positiveText("Connect")
         .positiveColor(Color.parseColor("#03a9f4"))
@@ -239,6 +267,9 @@ then the first and last child's top and bottom will be overided.
 `MaterialDialog` inserts your view into a `ScrollView` and displays a divider above the action buttons,
 so don't wrap your custom view in a scroll view and don't worry about it being too long or needing a divider.
 However, you should avoid making any content that wouldn't belong in a dialog because of its size.
+
+You can pass `positiveText()` or the other action buttons to the builder to force it to display the action buttons
+below your list, however this is only useful in some specific cases.
 
 ---
 
@@ -280,6 +311,13 @@ MaterialDialog dialog = //... initialization via the builder ...
 View view = dialog.getCustomView();
 ```
 
+If you want to get a reference to the title frame (which contains the icon and title, e.g. to change visibility):
+
+```java
+MaterialDialog dialog = //... initialization via the builder ...
+TextView title = dialog.getTitleFrame();
+```
+
 If you want to get a reference to one of the dialog action buttons (e.g. to enable or disable buttons):
 
 ```java
@@ -294,22 +332,6 @@ If you want to update the title of a dialog action button (you can pass a string
 ```java
 MaterialDialog dialog = //... initialization via the builder ...
 dialog.setActionButton(DialogAction.NEGATIVE, "New Title");
-```
-
-If you want to forcefully hide the action buttons (this will also result in single choice and multi
-choice selection callbacks being immediately sent as selections are made, without dismissing the dialog):
-
-```java
-MaterialDialog dialog new MaterialDialog.Builder(this)
-        // ... other initialization
-        .hideActions()
-        .build();
-dialog.show();
-
-// OR
-
-dialog.hideActions();
-dialog.showActions();
 ```
 
 If you don't want the dialog to automatically be dismissed when an action button is pressed or when

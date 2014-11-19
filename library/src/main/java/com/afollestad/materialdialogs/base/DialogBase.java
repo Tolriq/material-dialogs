@@ -3,12 +3,16 @@ package com.afollestad.materialdialogs.base;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Message;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.TextView;
 
 /**
  * @author Aidan Follestad (afollestad)
@@ -67,19 +71,11 @@ public class DialogBase extends AlertDialog implements DialogInterface.OnShowLis
     }
 
     /**
-     * @deprecated Not supported by the Material dialog.
+     * @deprecated Use setContent() instead.
      */
     @Override
     public void setMessage(CharSequence message) {
-        throw new RuntimeException("This method is not supported by the MaterialDialog.");
-    }
-
-    /**
-     * @deprecated Not supported by the Material dialog.
-     */
-    @Override
-    public void setTitle(CharSequence title) {
-        throw new RuntimeException("This method is not supported by the MaterialDialog.");
+        throw new RuntimeException("This method is not supported by the MaterialDialog, use setContent() instead.");
     }
 
     /**
@@ -87,30 +83,6 @@ public class DialogBase extends AlertDialog implements DialogInterface.OnShowLis
      */
     @Override
     public void setCustomTitle(View customTitleView) {
-        throw new RuntimeException("This method is not supported by the MaterialDialog.");
-    }
-
-    /**
-     * @deprecated Not supported by the Material dialog.
-     */
-    @Override
-    public void setIcon(Drawable icon) {
-        throw new RuntimeException("This method is not supported by the MaterialDialog.");
-    }
-
-    /**
-     * @deprecated Not supported by the Material dialog.
-     */
-    @Override
-    public void setIcon(int resId) {
-        throw new RuntimeException("This method is not supported by the MaterialDialog.");
-    }
-
-    /**
-     * @deprecated Not supported by the Material dialog.
-     */
-    @Override
-    public void setIconAttribute(int attrId) {
         throw new RuntimeException("This method is not supported by the MaterialDialog.");
     }
 
@@ -151,5 +123,19 @@ public class DialogBase extends AlertDialog implements DialogInterface.OnShowLis
     public void onShow(DialogInterface dialog) {
         if (mShowListener != null)
             mShowListener.onShow(dialog);
+    }
+
+    protected void setBackgroundCompat(View view, Drawable d) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
+            view.setBackgroundDrawable(d);
+        } else {
+            view.setBackground(d);
+        }
+    }
+
+    protected void setTypeface(TextView text, Typeface t) {
+        int flags = text.getPaintFlags() | Paint.SUBPIXEL_TEXT_FLAG;
+        text.setPaintFlags(flags);
+        text.setTypeface(t);
     }
 }
