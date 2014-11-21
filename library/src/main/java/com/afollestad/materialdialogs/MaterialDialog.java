@@ -25,6 +25,7 @@ import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
+import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
@@ -61,7 +62,7 @@ public class MaterialDialog extends DialogBase implements View.OnClickListener, 
     private ListCallback listCallbackSingle;
     private ListCallbackMulti listCallbackMulti;
     private View customView;
-    private String[] items;
+    private CharSequence[] items;
     private boolean isStacked;
     private int selectedIndex;
     private Integer[] selectedIndices;
@@ -82,7 +83,7 @@ public class MaterialDialog extends DialogBase implements View.OnClickListener, 
             this.mediumFont = Typeface.createFromAsset(getContext().getResources().getAssets(), "Roboto-Medium.ttf");
 
         this.mContext = builder.context;
-        this.view = LayoutInflater.from(builder.context).inflate(R.layout.md_dialog, null);
+        this.view = LayoutInflater.from(getContext()).inflate(R.layout.md_dialog, null);
         this.customView = builder.customView;
         this.callback = builder.callback;
         this.listCallback = builder.listCallback;
@@ -139,16 +140,14 @@ public class MaterialDialog extends DialogBase implements View.OnClickListener, 
             icon.setVisibility(View.GONE);
         }
 
-        if ((negativeText != null || neutralText != null) && positiveText == null)
-            positiveText = getContext().getString(android.R.string.ok);
         if (items != null && items.length > 0)
             title = (TextView) view.findViewById(R.id.titleCustomView);
-        else if (positiveText == null && customView == null)
-            positiveText = getContext().getString(android.R.string.ok);
 
         // Title is set after it's determined whether to use first title or custom view title
         if (builder.title == null || builder.title.toString().trim().isEmpty()) {
             titleFrame.setVisibility(View.GONE);
+            if (customView == null)
+                view.findViewById(R.id.titleFrameCustomView).setVisibility(View.GONE);
         } else {
             title.setText(builder.title);
             setTypeface(title, mediumFont);
@@ -194,7 +193,7 @@ public class MaterialDialog extends DialogBase implements View.OnClickListener, 
                 setMargin(view.findViewById(R.id.buttonDefaultFrame), -1, 0, -1, -1);
                 if (items != null && items.length > 0) {
                     View customFrame = view.findViewById(R.id.customViewFrame);
-                    Resources r = mContext.getResources();
+                    Resources r = getContext().getResources();
                     int bottomPadding = view.findViewById(R.id.titleCustomView).getVisibility() == View.VISIBLE ?
                             (int) r.getDimension(R.dimen.md_main_frame_margin) : (int) r.getDimension(R.dimen.md_dialog_frame_margin);
                     customFrame.setPadding(customFrame.getPaddingLeft(), customFrame.getPaddingTop(),
@@ -202,7 +201,7 @@ public class MaterialDialog extends DialogBase implements View.OnClickListener, 
                 }
             } else {
                 view.findViewById(R.id.customViewDivider).setVisibility(View.GONE);
-                final int bottomMargin = (int) mContext.getResources().getDimension(R.dimen.md_button_padding_frame_bottom);
+                final int bottomMargin = (int) getContext().getResources().getDimension(R.dimen.md_button_padding_frame_bottom);
                 setMargin(view.findViewById(R.id.buttonStackedFrame), -1, bottomMargin, -1, -1);
                 setMargin(view.findViewById(R.id.buttonDefaultFrame), -1, bottomMargin, -1, -1);
             }
@@ -221,7 +220,7 @@ public class MaterialDialog extends DialogBase implements View.OnClickListener, 
                 setMargin(view.findViewById(R.id.mainFrame), -1, 0, -1, -1);
                 setMargin(view.findViewById(R.id.buttonStackedFrame), -1, 0, -1, -1);
                 setMargin(view.findViewById(R.id.buttonDefaultFrame), -1, 0, -1, -1);
-                final int conPadding = (int) mContext.getResources().getDimension(R.dimen.md_main_frame_margin);
+                final int conPadding = (int) getContext().getResources().getDimension(R.dimen.md_main_frame_margin);
                 View con = view.findViewById(R.id.content);
                 con.setPadding(con.getPaddingLeft(), 0, con.getPaddingRight(), conPadding);
             } else {
@@ -263,16 +262,16 @@ public class MaterialDialog extends DialogBase implements View.OnClickListener, 
         setMargin(customFrame, -1, -1, 0, 0);
         LayoutInflater li = LayoutInflater.from(mContext);
 
-        final int customFramePadding = (int) mContext.getResources().getDimension(R.dimen.md_main_frame_margin);
+        final int customFramePadding = (int) getContext().getResources().getDimension(R.dimen.md_title_margin_plainlist);
         int listPaddingBottom;
         View title = view.findViewById(R.id.titleCustomView);
         if (title.getVisibility() == View.VISIBLE) {
             title.setPadding(customFramePadding, title.getPaddingTop(), customFramePadding, title.getPaddingBottom());
             listPaddingBottom = customFramePadding;
         } else {
-            listPaddingBottom = (int) mContext.getResources().getDimension(R.dimen.md_main_frame_margin);
+            listPaddingBottom = (int) getContext().getResources().getDimension(R.dimen.md_main_frame_margin);
         }
-        if (positiveText != null) listPaddingBottom = 0;
+        if (hasActionButtons()) listPaddingBottom = 0;
         customFrame.setPadding(customFrame.getPaddingLeft(), customFrame.getPaddingTop(),
                 customFrame.getPaddingRight(), listPaddingBottom);
 
@@ -328,41 +327,37 @@ public class MaterialDialog extends DialogBase implements View.OnClickListener, 
          * From: http://www.google.com/design/spec/components/dialogs.html#dialogs-specs
          */
         final int dialogWidth = getWindow().getDecorView().getMeasuredWidth();
-        final int eightDp = (int) mContext.getResources().getDimension(R.dimen.md_button_padding_horizontal_external);
-        final int sixteenDp = (int) mContext.getResources().getDimension(R.dimen.md_button_padding_frame_side);
+        final int eightDp = (int) getContext().getResources().getDimension(R.dimen.md_button_padding_horizontal_external);
+        final int sixteenDp = (int) getContext().getResources().getDimension(R.dimen.md_button_padding_frame_side);
         return (dialogWidth - sixteenDp - sixteenDp - eightDp) / 2;
     }
 
+    /**
+     * Detects whether or not the custom view or list content can be scrolled.
+     */
     private boolean canCustomViewScroll() {
-        /**
-         * Detects whether or not the custom view or list content can be scrolled.
-         */
         final ScrollView scrollView = (ScrollView) view.findViewById(R.id.customViewScroll);
         final int childHeight = view.findViewById(R.id.customViewFrame).getMeasuredHeight();
         return scrollView.getMeasuredHeight() < childHeight;
     }
 
+    /**
+     * Detects whether or not the content TextView can be scrolled.
+     */
     private boolean canContentScroll() {
-        /**
-         * Detects whether or not the custom view or list content can be scrolled.
-         */
         final ScrollView scrollView = (ScrollView) view.findViewById(R.id.contentScrollView);
         final int childHeight = view.findViewById(R.id.content).getMeasuredHeight();
         return scrollView.getMeasuredHeight() < childHeight;
     }
 
+    /**
+     * Measures the action button's and their text to decide whether or not the button should be stacked.
+     */
     private void checkIfStackingNeeded() {
-        /**
-         * Measures the action button's and their text to decide whether or not the button should be stacked.
-         */
-        if (((negativeButton == null || negativeButton.getVisibility() == View.GONE) &&
-                (neutralButton == null || neutralButton.getVisibility() == View.GONE))) {
-            // Stacking isn't necessary if you only have one button
-            return;
-        }
+        if (numberOfActionButtons() <= 1) return;
         final int maxWidth = calculateMaxButtonWidth();
         final Paint paint = positiveButton.getPaint();
-        final int eightDp = (int) mContext.getResources().getDimension(R.dimen.md_button_padding_horizontal_external);
+        final int eightDp = (int) getContext().getResources().getDimension(R.dimen.md_button_padding_horizontal_external);
         final int positiveWidth = (int) paint.measureText(positiveButton.getText().toString()) + (eightDp * 2);
         isStacked = positiveWidth > maxWidth;
         if (!isStacked && this.neutralText != null) {
@@ -376,12 +371,12 @@ public class MaterialDialog extends DialogBase implements View.OnClickListener, 
         invalidateActions();
     }
 
+    /**
+     * Invalidates the positive/neutral/negative action buttons. Decides whether they should be visible
+     * and sets their properties (such as height, text color, etc.).
+     */
     private boolean invalidateActions() {
-        /**
-         * Invalidates the positive/neutral/negative action buttons. Decides whether they should be visible
-         * and sets their properties (such as height, text color, etc.).
-         */
-        if (positiveText == null) {
+        if (!hasActionButtons()) {
             // If the dialog is a plain list dialog, no buttons are shown.
             view.findViewById(R.id.buttonDefaultFrame).setVisibility(View.GONE);
             view.findViewById(R.id.buttonStackedFrame).setVisibility(View.GONE);
@@ -434,6 +429,18 @@ public class MaterialDialog extends DialogBase implements View.OnClickListener, 
             negativeButton.setText(this.negativeText);
             negativeButton.setTag(NEGATIVE);
             negativeButton.setOnClickListener(this);
+
+            if (!isStacked) {
+                RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
+                        RelativeLayout.LayoutParams.WRAP_CONTENT,
+                        (int) getContext().getResources().getDimension(R.dimen.md_button_height));
+                if (this.positiveText != null) {
+                    params.addRule(RelativeLayout.LEFT_OF, R.id.buttonDefaultPositive);
+                } else {
+                    params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+                }
+                negativeButton.setLayoutParams(params);
+            }
         } else {
             negativeButton.setVisibility(View.GONE);
         }
@@ -449,7 +456,7 @@ public class MaterialDialog extends DialogBase implements View.OnClickListener, 
             @SuppressLint("WrongViewCast")
             RadioButton rb = (RadioButton) itemView.findViewById(R.id.control);
             if (rb.isChecked()) {
-                listCallbackSingle.onSelection(this, v, i - 1, ((TextView) itemView.findViewById(R.id.title)).getText().toString());
+                listCallbackSingle.onSelection(this, v, i - 1, ((TextView) itemView.findViewById(R.id.title)).getText());
                 break;
             }
         }
@@ -457,7 +464,7 @@ public class MaterialDialog extends DialogBase implements View.OnClickListener, 
 
     private void sendMultichoiceCallback() {
         List<Integer> selectedIndices = new ArrayList<Integer>();
-        List<String> selectedTitles = new ArrayList<String>();
+        List<CharSequence> selectedTitles = new ArrayList<CharSequence>();
         LinearLayout list = (LinearLayout) view.findViewById(R.id.customViewFrame);
         for (int i = 1; i < list.getChildCount(); i++) {
             View itemView = list.getChildAt(i);
@@ -465,12 +472,12 @@ public class MaterialDialog extends DialogBase implements View.OnClickListener, 
             CheckBox rb = (CheckBox) itemView.findViewById(R.id.control);
             if (rb.isChecked()) {
                 selectedIndices.add(i - 1);
-                selectedTitles.add(((TextView) itemView.findViewById(R.id.title)).getText().toString());
+                selectedTitles.add(((TextView) itemView.findViewById(R.id.title)).getText());
             }
         }
         listCallbackMulti.onSelection(this,
                 selectedIndices.toArray(new Integer[selectedIndices.size()]),
-                selectedTitles.toArray(new String[selectedTitles.size()]));
+                selectedTitles.toArray(new CharSequence[selectedTitles.size()]));
     }
 
     @Override
@@ -509,14 +516,16 @@ public class MaterialDialog extends DialogBase implements View.OnClickListener, 
                     cb.setChecked(true);
                 invalidateSingleChoice(index);
                 if (positiveText == null) {
-                    // Immediately send the selection callback without dismissing if no action buttons are shown
+                    // Immediately send the selection callback if no positive button is shown
+                    if (autoDismiss) dismiss();
                     sendSingleChoiceCallback(v);
                 }
             } else if (listCallbackMulti != null) {
                 CheckBox cb = (CheckBox) ((LinearLayout) v).getChildAt(0);
                 cb.setChecked(!cb.isChecked());
                 if (positiveText == null) {
-                    // Immediately send the selection callback without dismissing if no action buttons are shown
+                    // Immediately send the selection callback if no positive button is shown
+                    if (autoDismiss) dismiss();
                     sendMultichoiceCallback();
                 }
             } else if (autoDismiss) dismiss();
@@ -542,7 +551,7 @@ public class MaterialDialog extends DialogBase implements View.OnClickListener, 
         protected Alignment contentAlignment = Alignment.LEFT;
         protected int titleColor = -1;
         protected CharSequence content;
-        protected String[] items;
+        protected CharSequence[] items;
         protected CharSequence positiveText;
         protected CharSequence neutralText;
         protected CharSequence negativeText;
@@ -680,7 +689,7 @@ public class MaterialDialog extends DialogBase implements View.OnClickListener, 
             return this;
         }
 
-        public Builder items(String[] items) {
+        public Builder items(CharSequence[] items) {
             this.items = items;
             return this;
         }
@@ -928,7 +937,29 @@ public class MaterialDialog extends DialogBase implements View.OnClickListener, 
      * @param titleRes The string resource of the new title of the action button.
      */
     public final void setActionButton(DialogAction which, @StringRes int titleRes) {
-        setActionButton(which, mContext.getString(titleRes));
+        setActionButton(which, getContext().getString(titleRes));
+    }
+
+    /**
+     * Gets whether or not the positive, neutral, or negative action button is visible.
+     *
+     * @return Whether or not 1 or more action buttons is visible.
+     */
+    public final boolean hasActionButtons() {
+        return numberOfActionButtons() > 0;
+    }
+
+    /**
+     * Gets the number of visible action buttons.
+     *
+     * @return 0 through 3, depending on how many should be or are visible.
+     */
+    public final int numberOfActionButtons() {
+        int number = 0;
+        if (positiveText != null) number++;
+        if (neutralText != null) number++;
+        if (negativeText != null) number++;
+        return number;
     }
 
     /**
@@ -952,7 +983,7 @@ public class MaterialDialog extends DialogBase implements View.OnClickListener, 
 
     @Override
     public void setIconAttribute(int attrId) {
-        Drawable d = DialogUtils.resolveDrawable(mContext, attrId);
+        Drawable d = DialogUtils.resolveDrawable(getContext(), attrId);
         icon.setImageDrawable(d);
         icon.setVisibility(d != null ? View.VISIBLE : View.GONE);
     }
@@ -961,18 +992,18 @@ public class MaterialDialog extends DialogBase implements View.OnClickListener, 
         ((TextView) view.findViewById(R.id.content)).setText(content);
     }
 
-    public final void setItems(String[] items) {
+    public final void setItems(CharSequence[] items) {
         this.items = items;
         invalidateList();
     }
 
 
     public static interface ListCallback {
-        void onSelection(MaterialDialog dialog, View itemView, int which, String text);
+        void onSelection(MaterialDialog dialog, View itemView, int which, CharSequence text);
     }
 
     public static interface ListCallbackMulti {
-        void onSelection(MaterialDialog dialog, Integer[] which, String[] text);
+        void onSelection(MaterialDialog dialog, Integer[] which, CharSequence[] text);
     }
 
     public static interface SimpleCallback {
