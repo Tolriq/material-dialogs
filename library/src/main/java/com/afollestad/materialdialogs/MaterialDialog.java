@@ -130,12 +130,12 @@ public class MaterialDialog extends DialogBase implements View.OnClickListener {
             content.setLinkTextColor(mBuilder.positiveColor);
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
             //noinspection ResourceType
             title.setTextAlignment(gravityToAlignment(builder.titleGravity));
-        } else {
+        } else {*/
             title.setGravity(gravityIntToGravity(builder.titleGravity));
-        }
+        //}
 
         if (builder.contentColor != -1) {
             content.setTextColor(builder.contentColor);
@@ -245,12 +245,12 @@ public class MaterialDialog extends DialogBase implements View.OnClickListener {
                 title.setTextColor(DialogUtils.resolveColor(getContext(), R.attr.md_title_color, fallback));
             }
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
                 //noinspection ResourceType
                 content.setTextAlignment(gravityToAlignment(builder.contentGravity));
-            } else {
+            } else {*/
                 content.setGravity(gravityIntToGravity(builder.contentGravity));
-            }
+            //}
         }
 
         if (builder.showListener != null) {
