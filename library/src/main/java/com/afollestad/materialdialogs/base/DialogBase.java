@@ -10,8 +10,6 @@ import android.os.Build;
 import android.os.Message;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.ListView;
 import android.widget.TextView;
 
 /**
@@ -28,31 +26,25 @@ public class DialogBase extends AlertDialog implements DialogInterface.OnShowLis
         super(context);
     }
 
-    public static void setMargin(View view, int top, int bottom, int left, int right) {
-        setMargin(view, top, bottom, left, right, -1);
-    }
-
-    public static void setMargin(View view, int top, int bottom, int left, int right, int height) {
+    protected void setVerticalMargins(View view, int topMargin, int bottomMargin) {
         ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
-        if (top > -1) params.topMargin = top;
-        if (bottom > -1) params.bottomMargin = bottom;
-        if (left > -1) params.leftMargin = left;
-        if (right > -1) params.rightMargin = right;
-        if (height > -1) params.height = height;
-        view.setLayoutParams(params);
-    }
-
-    /**
-     * @deprecated Use getActionButton(com.afollestad.materialdialogs.DialogAction)} instead.
-     */
-    @Override
-    public Button getButton(int whichButton) {
-        throw new RuntimeException("Use getActionButton(MaterialDialog.Button) instead.");
+        boolean changed = false;
+        if (topMargin > -1 && params.topMargin != topMargin) {
+            params.topMargin = topMargin;
+            changed = true;
+        }
+        if (bottomMargin > -1 && params.bottomMargin != bottomMargin) {
+            params.bottomMargin = bottomMargin;
+            changed = true;
+        }
+        if (changed)
+            view.setLayoutParams(params);
     }
 
     /**
      * @deprecated Not supported by the Material dialog.
      */
+    @Deprecated
     @Override
     public void setView(View view) {
         throw new RuntimeException("This method is not supported by the MaterialDialog.");
@@ -65,6 +57,7 @@ public class DialogBase extends AlertDialog implements DialogInterface.OnShowLis
     /**
      * @deprecated Not supported by the Material dialog.
      */
+    @Deprecated
     @Override
     public void setView(View view, int viewSpacingLeft, int viewSpacingTop, int viewSpacingRight, int viewSpacingBottom) {
         throw new RuntimeException("This method is not supported by the MaterialDialog.");
@@ -73,6 +66,7 @@ public class DialogBase extends AlertDialog implements DialogInterface.OnShowLis
     /**
      * @deprecated Use setContent() instead.
      */
+    @Deprecated
     @Override
     public void setMessage(CharSequence message) {
         throw new RuntimeException("This method is not supported by the MaterialDialog, use setContent() instead.");
@@ -81,6 +75,7 @@ public class DialogBase extends AlertDialog implements DialogInterface.OnShowLis
     /**
      * @deprecated Not supported by the Material dialog.
      */
+    @Deprecated
     @Override
     public void setCustomTitle(View customTitleView) {
         throw new RuntimeException("This method is not supported by the MaterialDialog.");
@@ -89,6 +84,7 @@ public class DialogBase extends AlertDialog implements DialogInterface.OnShowLis
     /**
      * @deprecated Not supported by the Material dialog.
      */
+    @Deprecated
     @Override
     public void setButton(int whichButton, CharSequence text, Message msg) {
         throw new RuntimeException("Use setActionButton(MaterialDialog.Button, CharSequence) instead.");
@@ -97,17 +93,10 @@ public class DialogBase extends AlertDialog implements DialogInterface.OnShowLis
     /**
      * @deprecated Not supported by the Material dialog.
      */
+    @Deprecated
     @Override
     public void setButton(int whichButton, CharSequence text, OnClickListener listener) {
         throw new RuntimeException("Use setActionButton(MaterialDialog.Button, CharSequence) instead.");
-    }
-
-    /**
-     * @deprecated Not supported by the Material dialog.
-     */
-    @Override
-    public ListView getListView() {
-        throw new RuntimeException("This method is not supported by the MaterialDialog.");
     }
 
     @Override
@@ -127,6 +116,7 @@ public class DialogBase extends AlertDialog implements DialogInterface.OnShowLis
 
     protected void setBackgroundCompat(View view, Drawable d) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
+            //noinspection deprecation
             view.setBackgroundDrawable(d);
         } else {
             view.setBackground(d);

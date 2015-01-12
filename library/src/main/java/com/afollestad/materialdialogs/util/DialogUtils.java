@@ -1,4 +1,4 @@
-package com.afollestad.materialdialogs;
+package com.afollestad.materialdialogs.util;
 
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -19,18 +19,29 @@ public class DialogUtils {
     }
 
     public static int resolveColor(Context context, int attr) {
+        return resolveColor(context, attr, 0);
+    }
+
+    public static int resolveColor(Context context, int attr, int fallback) {
         TypedArray a = context.getTheme().obtainStyledAttributes(new int[]{attr});
         try {
-            return a.getColor(0, 0);
+            return a.getColor(0, fallback);
         } finally {
             a.recycle();
         }
     }
 
     public static Drawable resolveDrawable(Context context, int attr) {
+        return resolveDrawable(context, attr, null);
+    }
+
+    private static Drawable resolveDrawable(Context context, int attr, Drawable fallback) {
         TypedArray a = context.getTheme().obtainStyledAttributes(new int[]{attr});
         try {
-            return a.getDrawable(0);
+            Drawable d = a.getDrawable(0);
+            if (d == null && fallback != null)
+                d = fallback;
+            return d;
         } finally {
             a.recycle();
         }
